@@ -6,6 +6,9 @@
   "keywords": [
     "addressable"
   ],
+  "dependencies": {
+    "com.unity.addressables": "1.21.19"
+  },
   "author": {
     "name": "Azuki (Kazuaki Terabayashi)",
     "url": "https://twitter.com/Azukiidx"
