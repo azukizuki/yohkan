@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using yohkan.runtime.scripts.debug;
 using yohkan.runtime.scripts.interfaces;
 using yohkan.runtime.scripts.internals;
 using Object = UnityEngine.Object;
@@ -16,20 +17,21 @@ namespace yohkan.runtime.scripts
     {
         private readonly List<AssetInfo> _cachedAssets = new();
         private readonly HashSet<AssetReserveInfo> _reserveAssets = new();
+        private readonly IAssetResolveEvent _resolveEvent = null;
 
-        
-        public YohkanAssetProvider()
+
+        public YohkanAssetProvider(IAssetResolveEvent resolveEvent = null)
         {
             _cachedAssets?.Clear();
             _reserveAssets?.Clear();
-            
+            _resolveEvent = resolveEvent;
         }
         
         void IAssetReserver.ReserveAsset<T>(string address)
         {
             if (string.IsNullOrWhiteSpace(address))
             {
-                Debug.LogWarning("address is Empty!");
+                YohkanLogger.LogWarning("address is Empty!");
                 return;
             }
             _reserveAssets.Add(new AssetReserveInfo()
@@ -66,7 +68,7 @@ namespace yohkan.runtime.scripts
             }
         }
 
-        async Task IAssetResolver.ResolveAsync(Func<long,Task<bool>> askDownloadConfirmEvent,Action<float> onUpdateDownloadProgressEvent, CancellationToken cancellationToken)
+        async Task IAssetResolver.ResolveAsync(CancellationToken cancellationToken)
         {
             if (!_reserveAssets.Any()) return;
 
@@ -88,11 +90,11 @@ namespace yohkan.runtime.scripts
             
             if (downloadSize > 0)
             {
-                Debug.Log("Start Download Process");
+                YohkanLogger.Log("Start Download Process");
                 var agreement = true;
-                if (askDownloadConfirmEvent != null)
+                if (_resolveEvent != null)
                 {
-                    agreement = await askDownloadConfirmEvent.Invoke(downloadSize);
+                    agreement = await _resolveEvent.AskDownloadConfirm(downloadSize);
                 }
 
                 if (!agreement)
@@ -103,18 +105,17 @@ namespace yohkan.runtime.scripts
                 var downloadTaskResult =
                     Addressables.DownloadDependenciesAsync(keys, Addressables.MergeMode.Union, true);
                 await Task.WhenAll(downloadTaskResult.Task,
-                    PublishDownloadProgressEvent(downloadTaskResult, onUpdateDownloadProgressEvent));
+                    PublishDownloadProgressEvent(downloadTaskResult));
             }
 
             var tasks = _reserveAssets.Select(SetCacheAsync);
             await Task.WhenAll(tasks);
             
             _reserveAssets.Clear();
-            Debug.Log("loaded.");
+            YohkanLogger.Log("loaded.");
         }
 
-        private async Task PublishDownloadProgressEvent(AsyncOperationHandle handle,
-            System.Action<float> onUpdateDownloadProgress)
+        private async Task PublishDownloadProgressEvent(AsyncOperationHandle handle)
         {
             while (true)
             {
@@ -122,10 +123,10 @@ namespace yohkan.runtime.scripts
                 if (handle.Status == AsyncOperationStatus.Failed) break;
                 if (handle.PercentComplete >= 1f || handle.Status == AsyncOperationStatus.Succeeded) break;
                 
-                onUpdateDownloadProgress?.Invoke(handle.PercentComplete);
+                _resolveEvent?.OnUpdateDownloadProgress(handle.PercentComplete);
                 await Task.Delay(4);
             }
-            onUpdateDownloadProgress?.Invoke(1f);
+            _resolveEvent?.OnUpdateDownloadProgress(1f);
 
         }
 
@@ -179,7 +180,7 @@ namespace yohkan.runtime.scripts
 
             if (!findTarget)
             {
-                Debug.LogError($"Not Found by ResolvedAsset: {address}.");
+                YohkanLogger.LogError($"Not Found by ResolvedAsset: {address}.");
                 return null;
             }
 
@@ -196,7 +197,7 @@ namespace yohkan.runtime.scripts
                     }
                 }
                 
-                Debug.LogError("Asset Type is MissMatch!");
+                YohkanLogger.LogError("Asset Type is MissMatch!");
             }
 
             return convertedAsset;
@@ -225,7 +226,7 @@ namespace yohkan.runtime.scripts
 
             if (!findTarget)
             {
-                Debug.LogError($"Not Found by ResolvedAsset: {reference.AssetGUID}.");
+                YohkanLogger.LogError($"Not Found by ResolvedAsset: {reference.AssetGUID}.");
                 return null;
             }
 
@@ -242,7 +243,7 @@ namespace yohkan.runtime.scripts
                     }
                 }
                 
-                Debug.LogError("Asset Type is MissMatch!");
+                YohkanLogger.LogError("Asset Type is MissMatch!");
             }
 
             return convertedAsset;
