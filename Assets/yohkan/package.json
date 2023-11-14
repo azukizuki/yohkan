@@ -1,0 +1,13 @@
+{
+  "name": "com.azuki.yohkan",
+  "version": "0.0.1",
+  "displayName": "yohkan",
+  "description": "simple addressable wrapper.",
+  "keywords": [
+    "addressable"
+  ],
+  "author": {
+    "name": "Azuki (Kazuaki Terabayashi)",
+    "url": "https://twitter.com/Azukiidx"
+  }
+}
