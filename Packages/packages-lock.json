@@ -1,14 +1,5 @@
 {
   "dependencies": {
-    "com.azuki.yohkan": {
-      "version": "git+ssh://git@github.com/azukizuki/yohkan.git?path=Assets/yohkan",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {
-        "com.unity.addressables": "1.21.19"
-      },
-      "hash": "aadf4058e8f2300cc554ee6259480757421520f3"
-    },
     "com.unity.addressables": {
       "version": "1.21.19",
       "depth": 0,
