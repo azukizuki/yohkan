@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
+  m_Name: AddressableAssetSettings
+  m_EditorClassIdentifier: 
+  m_DefaultGroup: c8f84053b74ad43f59e92f6eca8db8be
+  m_currentHash:
+    serializedVersion: 2
+    Hash: ef09d18623d02a4b0fee3d91aed9c265
+  m_OptimizeCatalogSize: 0
+  m_BuildRemoteCatalog: 1
+  m_BundleLocalCatalog: 0
+  m_CatalogRequestsTimeout: 0
+  m_DisableCatalogUpdateOnStart: 1
+  m_IgnoreUnsupportedFilesInBuild: 0
+  m_UniqueBundleIds: 1
+  m_NonRecursiveBuilding: 1
+  m_CCDEnabled: 0
+  m_maxConcurrentWebRequests: 3
+  m_ContiguousBundles: 1
+  m_StripUnityVersionFromBundleBuild: 0
+  m_DisableVisibleSubAssetRepresentations: 0
+  m_ShaderBundleNaming: 0
+  m_ShaderBundleCustomNaming: 
+  m_MonoScriptBundleNaming: 0
+  m_CheckForContentUpdateRestrictionsOption: 0
+  m_MonoScriptBundleCustomNaming: 
+  m_RemoteCatalogBuildPath:
+    m_Id: c3af196ef71f64f269d4fc6ca66bd17e
+  m_RemoteCatalogLoadPath:
+    m_Id: d944e0b374b5946279cdb8b3a432a7f8
+  m_ContentStateBuildPathProfileVariableName: <default settings path>
+  m_CustomContentStateBuildPath: /Users/azuki/yohkan-sample/Assets/../AssetBundleContentState/1.0_dev
+  m_ContentStateBuildPath: /Users/azuki/yohkan-sample/Assets/../AssetBundleContentState/1.0_dev
+  m_BuildAddressablesWithPlayerBuild: 0
+  m_overridePlayerVersion: 1.0_dev
+  m_GroupAssets:
+  - {fileID: 11400000, guid: c9f084841b42a4ba3bd26dcf2a8db66f, type: 2}
+  - {fileID: 11400000, guid: de35d83d74ccf49149f47c950064b668, type: 2}
+  - {fileID: 11400000, guid: 967d0fd86e4824140aa0c6ca87153237, type: 2}
+  - {fileID: 11400000, guid: 8cd16f621194946f8926552f4d354929, type: 2}
+  m_BuildSettings:
+    m_CompileScriptsInVirtualMode: 0
+    m_CleanupStreamingAssetsAfterBuilds: 1
+    m_LogResourceManagerExceptions: 1
+    m_BundleBuildPath: Temp/com.unity.addressables/AssetBundles
+  m_ProfileSettings:
+    m_Profiles:
+    - m_InheritedParent: 
+      m_Id: d9ac8fa44ab01459196886afacd18e57
+      m_ProfileName: Default
+      m_Values:
+      - m_Id: 229e76a905c6045458aee484949cf958
+        m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+      - m_Id: acc6921e829e34b01b1c39eb4ea27e10
+        m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
+      - m_Id: 472c1e13331b145c58b15760a61464d3
+        m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+      - m_Id: c3af196ef71f64f269d4fc6ca66bd17e
+        m_Value: ServerData/1.0_dev/StandaloneOSX
+      - m_Id: d944e0b374b5946279cdb8b3a432a7f8
+        m_Value: https://yohkan-sample.s3.ap-northeast-1.amazonaws.com/1.0_dev/StandaloneOSX
+    m_ProfileEntryNames:
+    - m_Id: 229e76a905c6045458aee484949cf958
+      m_Name: BuildTarget
+      m_InlineUsage: 0
+    - m_Id: acc6921e829e34b01b1c39eb4ea27e10
+      m_Name: Local.BuildPath
+      m_InlineUsage: 0
+    - m_Id: 472c1e13331b145c58b15760a61464d3
+      m_Name: Local.LoadPath
+      m_InlineUsage: 0
+    - m_Id: c3af196ef71f64f269d4fc6ca66bd17e
+      m_Name: Remote.BuildPath
+      m_InlineUsage: 0
+    - m_Id: d944e0b374b5946279cdb8b3a432a7f8
+      m_Name: Remote.LoadPath
+      m_InlineUsage: 0
+    m_ProfileVersion: 1
+  m_LabelTable:
+    m_LabelNames:
+    - default
+    - yohkan_all_download
+  m_SchemaTemplates: []
+  m_GroupTemplateObjects:
+  - {fileID: 11400000, guid: ab3ecd9c002e0486dbd775ad8d02c3ed, type: 2}
+  m_InitializationObjects: []
+  m_CertificateHandlerType:
+    m_AssemblyName: 
+    m_ClassName: 
+  m_ActivePlayerDataBuilderIndex: 3
+  m_DataBuilders:
+  - {fileID: 11400000, guid: 73a9e5faae15d48fca7acac889abe813, type: 2}
+  - {fileID: 11400000, guid: 0c5661aafedfa4d66af897265e9bd83a, type: 2}
+  - {fileID: 11400000, guid: 182cb507fc600462fb86d1dc74aff873, type: 2}
+  - {fileID: 11400000, guid: c63ac0c11134548ffabad3cf5bf7d58a, type: 2}
+  m_ActiveProfileId: d9ac8fa44ab01459196886afacd18e57
+  m_HostingServicesManager:
+    m_HostingServiceInfos: []
+    m_Settings: {fileID: 11400000}
+    m_NextInstanceId: 0
+    m_RegisteredServiceTypeRefs: []
+    m_PingTimeoutInMilliseconds: 5000
