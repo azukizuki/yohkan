@@ -9,6 +9,9 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using yohkan.runtime.scripts.debug;
 using yohkan.runtime.scripts.interfaces;
 using Object = UnityEngine.Object;
+#if YOHKAN_ENABLE_UNITASK
+using Cysharp.Threading.Tasks;
+#endif
 
 namespace yohkan.runtime.scripts
 {
@@ -18,7 +21,11 @@ namespace yohkan.runtime.scripts
         private readonly List<IDisposable> _bundleProviderDisposables = new();
         private readonly Dictionary<Type, IExternalAssetContainer> _externalAssetContainers = new();
         
+        #if YOHKAN_ENABLE_UNITASK
+        public async UniTask InitializeAsync(CancellationToken cancellationToken)
+        #else
         public async Task InitializeAsync(CancellationToken cancellationToken)
+        #endif
         {
             YohkanLogger.Log("check catalog");
             await Addressables.InitializeAsync().Task;
@@ -36,15 +43,28 @@ namespace yohkan.runtime.scripts
             }
         }
         
+        #if YOHKAN_ENABLE_UNITASK
+        public async UniTask DownloadAllRemoteAssetsAsync(IAssetResolveEvent resolveEvent, CancellationToken cancellationToken)
+        #else
         public async Task DownloadAllRemoteAssetsAsync(IAssetResolveEvent resolveEvent, CancellationToken cancellationToken)
+        #endif
         {
             await DownloadRemoteAssetByLabel(resolveEvent, new []{YohkanRuntimeConsts.ALL_DOWNLOAD_LABEL}, cancellationToken);
         }
 
+        #if YOHKAN_ENABLE_UNITASK
+        public async UniTask DownloadRemoteAssetByLabel(IAssetResolveEvent resolveEvent, IEnumerable<string> label,
+            CancellationToken cancellationToken)
+        #else
         public async Task DownloadRemoteAssetByLabel(IAssetResolveEvent resolveEvent, IEnumerable<string> label,
             CancellationToken cancellationToken)
+        #endif
         {
+            #if YOHKAN_ENABLE_UNITASK
+            async UniTask PublishDownloadProgressEvent(AsyncOperationHandle handle,IAssetResolveEvent re)
+            #else
             async Task PublishDownloadProgressEvent(AsyncOperationHandle handle,IAssetResolveEvent re)
+            #endif
             {
                 while (true)
                 {
@@ -53,7 +73,11 @@ namespace yohkan.runtime.scripts
                     if (handle.PercentComplete >= 1f || handle.Status == AsyncOperationStatus.Succeeded) break;
                 
                     re?.OnUpdateDownloadProgress(handle.PercentComplete);
+                    #if YOHKAN_ENABLE_UNITASK
+                    await UniTask.Delay(4, cancellationToken: cancellationToken);
+                    #else
                     await Task.Delay(4);
+                    #endif
                 }
                 re?.OnUpdateDownloadProgress(1f);
             }
@@ -76,8 +100,13 @@ namespace yohkan.runtime.scripts
 
                 var downloadTaskResult =
                     Addressables.DownloadDependenciesAsync(label, Addressables.MergeMode.Union, true);
+                #if YOHKAN_ENABLE_UNITASK
+                await UniTask.WhenAll(downloadTaskResult.ToUniTask(cancellationToken: cancellationToken),
+                    PublishDownloadProgressEvent(downloadTaskResult, resolveEvent));
+                #else
                 await Task.WhenAll(downloadTaskResult.Task,
                     PublishDownloadProgressEvent(downloadTaskResult, resolveEvent));
+                #endif
             }
         }
 
@@ -92,7 +121,11 @@ namespace yohkan.runtime.scripts
             return instance;
         }
         
+        #if YOHKAN_ENABLE_UNITASK
+        public async UniTask<bool> IsAssetExistByCache(string address)
+        #else
         public async Task<bool> IsAssetExistByCache(string address)
+        #endif
         {
             var res = await Addressables.GetDownloadSizeAsync(address).Task;
             return res == 0;

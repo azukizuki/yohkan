@@ -10,6 +10,9 @@ using yohkan.runtime.scripts.debug;
 using yohkan.runtime.scripts.interfaces;
 using yohkan.runtime.scripts.internals;
 using Object = UnityEngine.Object;
+#if YOHKAN_ENABLE_UNITASK
+using Cysharp.Threading.Tasks;
+#endif
 
 namespace yohkan.runtime.scripts
 {
@@ -67,8 +70,12 @@ namespace yohkan.runtime.scripts
                 (this as IAssetReserver).ReserveAsset<T>(reference);
             }
         }
-
+        
+        #if YOHKAN_ENABLE_UNITASK
+        async UniTask IAssetResolver.ResolveAsync(CancellationToken cancellationToken)
+        #else
         async Task IAssetResolver.ResolveAsync(CancellationToken cancellationToken)
+        #endif
         {
             if (!_reserveAssets.Any()) return;
 
@@ -104,8 +111,14 @@ namespace yohkan.runtime.scripts
 
                 var downloadTaskResult =
                     Addressables.DownloadDependenciesAsync(keys, Addressables.MergeMode.Union, true);
-                await Task.WhenAll(downloadTaskResult.Task,
+                #if YOHKAN_ENABLE_UNITASK
+                await UniTask.WhenAll(downloadTaskResult.ToUniTask(cancellationToken: cancellationToken),
                     PublishDownloadProgressEvent(downloadTaskResult));
+                #else
+                 await Task.WhenAll(downloadTaskResult.Task,
+                    PublishDownloadProgressEvent(downloadTaskResult));
+                #endif
+               
             }
 
             var tasks = _reserveAssets.Select(SetCacheAsync);
@@ -115,7 +128,11 @@ namespace yohkan.runtime.scripts
             YohkanLogger.Log("loaded.");
         }
 
+        #if YOHKAN_ENABLE_UNITASK
+        private async UniTask PublishDownloadProgressEvent(AsyncOperationHandle handle)
+        #else
         private async Task PublishDownloadProgressEvent(AsyncOperationHandle handle)
+        #endif
         {
             while (true)
             {
@@ -124,7 +141,11 @@ namespace yohkan.runtime.scripts
                 if (handle.PercentComplete >= 1f || handle.Status == AsyncOperationStatus.Succeeded) break;
                 
                 _resolveEvent?.OnUpdateDownloadProgress(handle.PercentComplete);
+                #if YOHKAN_ENABLE_UNITASK
+                await UniTask.Delay(4);
+                #else
                 await Task.Delay(4);
+                #endif
             }
             _resolveEvent?.OnUpdateDownloadProgress(1f);
 

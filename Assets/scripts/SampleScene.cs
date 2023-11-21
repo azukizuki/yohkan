@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DefaultNamespace;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using yohkan.runtime.scripts;
 using yohkan.runtime.scripts.interfaces;
+using Cysharp.Threading.Tasks;
 
 public class SampleScene : MonoBehaviour, IAssetResolveEvent
 {
@@ -20,7 +22,6 @@ public class SampleScene : MonoBehaviour, IAssetResolveEvent
    [SerializeField] private TextMeshProUGUI _text = null;
 
    private YohkanAssetProvider _provider = null;
-
    private async void Awake()
    {
        _initializeButton.onClick.AddListener(async () =>
@@ -56,8 +57,8 @@ public class SampleScene : MonoBehaviour, IAssetResolveEvent
        
        
    }
-
-   async Task<bool> IAssetResolveEvent.AskDownloadConfirm(long downloadFileSizeByte)
+   
+   async UniTask<bool> IAssetResolveEvent.AskDownloadConfirm(long downloadFileSizeByte)
    {
        _text.text = $"DownloadSize: {downloadFileSizeByte}byte.";
        await Task.Delay(TimeSpan.FromSeconds(1));
