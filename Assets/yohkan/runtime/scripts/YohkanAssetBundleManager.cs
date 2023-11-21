@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using yohkan.runtime.scripts.debug;
 using yohkan.runtime.scripts.interfaces;
 using Object = UnityEngine.Object;
@@ -43,10 +44,41 @@ namespace yohkan.runtime.scripts
         public async Task DownloadRemoteAssetByLabel(IAssetResolveEvent resolveEvent, IEnumerable<string> label,
             CancellationToken cancellationToken)
         {
-            using var provider = CreateAssetBundleProvider(resolveEvent,false);
-            ((IAssetReserver)provider).ReserveAsset<Object>(label);
-            await ((IAssetResolver)provider).ResolveAsync(cancellationToken);
-            provider.Dispose();
+            async Task PublishDownloadProgressEvent(AsyncOperationHandle handle,IAssetResolveEvent re)
+            {
+                while (true)
+                {
+                    if (!handle.IsValid()) break;
+                    if (handle.Status == AsyncOperationStatus.Failed) break;
+                    if (handle.PercentComplete >= 1f || handle.Status == AsyncOperationStatus.Succeeded) break;
+                
+                    re?.OnUpdateDownloadProgress(handle.PercentComplete);
+                    await Task.Delay(4);
+                }
+                re?.OnUpdateDownloadProgress(1f);
+            }
+            
+            var downloadSize = await Addressables.GetDownloadSizeAsync(label).Task;
+            
+            if (downloadSize > 0)
+            {
+                YohkanLogger.Log("Start Download Process");
+                var agreement = true;
+                if (resolveEvent != null)
+                {
+                    agreement = await resolveEvent.AskDownloadConfirm(downloadSize);
+                }
+
+                if (!agreement)
+                {
+                    throw new Exception("Download Cancelled by user.");
+                }
+
+                var downloadTaskResult =
+                    Addressables.DownloadDependenciesAsync(label, Addressables.MergeMode.Union, true);
+                await Task.WhenAll(downloadTaskResult.Task,
+                    PublishDownloadProgressEvent(downloadTaskResult, resolveEvent));
+            }
         }
 
         public YohkanAssetProvider CreateAssetBundleProvider(IAssetResolveEvent resolveEvent ,bool addLifeManagement = true)
