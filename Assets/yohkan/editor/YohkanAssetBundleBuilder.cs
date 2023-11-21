@@ -56,9 +56,6 @@ namespace yohkan.editor
             var remoteBuildVariableData = profile.GetProfileDataByName("Remote.BuildPath");
             profile.SetValue(activeProfileId,remoteLoadVariableData.ProfileName,YohkanUtil.CreateRemoteLoadPath(remoteCatalogSuffix));
             profile.SetValue(activeProfileId,remoteBuildVariableData.ProfileName,YohkanUtil.CreateRemoteBuildPath(remoteCatalogSuffix));
-            
-            profile.SetValue(activeProfileId,setting.RemoteCatalogBuildPath.GetName(setting),YohkanUtil.CreateRemoteBuildPath(remoteCatalogSuffix));
-            profile.SetValue(activeProfileId,setting.RemoteCatalogLoadPath.GetName(setting),YohkanUtil.CreateRemoteLoadPath(remoteCatalogSuffix));
         }
 
 
