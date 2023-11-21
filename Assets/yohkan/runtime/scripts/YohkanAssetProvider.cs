@@ -110,7 +110,7 @@ namespace yohkan.runtime.scripts
                 }
 
                 var downloadTaskResult =
-                    Addressables.DownloadDependenciesAsync(keys, Addressables.MergeMode.Union, true);
+                    Addressables.DownloadDependenciesAsync(keys, Addressables.MergeMode.Union, false);
                 #if YOHKAN_ENABLE_UNITASK
                 await UniTask.WhenAll(downloadTaskResult.ToUniTask(cancellationToken: cancellationToken),
                     PublishDownloadProgressEvent(downloadTaskResult));
@@ -118,7 +118,8 @@ namespace yohkan.runtime.scripts
                  await Task.WhenAll(downloadTaskResult.Task,
                     PublishDownloadProgressEvent(downloadTaskResult));
                 #endif
-               
+                
+                Addressables.Release(downloadTaskResult);
             }
 
             var tasks = _reserveAssets.Select(SetCacheAsync);
