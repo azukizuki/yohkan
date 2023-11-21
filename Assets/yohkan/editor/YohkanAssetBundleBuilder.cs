@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using UnityEditor.AddressableAssets.Build;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 using UnityEngine;
 
 namespace yohkan.editor
@@ -47,7 +48,7 @@ namespace yohkan.editor
             var setting = YohkanUtil.GetSettings();
             setting.OverridePlayerVersion = versionString;
             setting.ContentStateBuildPath = YohkanUtil.CreateContentStateBuildPathString(remoteCatalogSuffix);
-
+            setting.BuildRemoteCatalog = true;
             //update remote build & load path.
             var profile = setting.profileSettings;
             var activeProfileId = setting.activeProfileId;
@@ -55,18 +56,26 @@ namespace yohkan.editor
             var remoteBuildVariableData = profile.GetProfileDataByName("Remote.BuildPath");
             profile.SetValue(activeProfileId,remoteLoadVariableData.ProfileName,YohkanUtil.CreateRemoteLoadPath(remoteCatalogSuffix));
             profile.SetValue(activeProfileId,remoteBuildVariableData.ProfileName,YohkanUtil.CreateRemoteBuildPath(remoteCatalogSuffix));
+            
+            profile.SetValue(activeProfileId,setting.RemoteCatalogBuildPath.GetName(setting),YohkanUtil.CreateRemoteBuildPath(remoteCatalogSuffix));
+            profile.SetValue(activeProfileId,setting.RemoteCatalogLoadPath.GetName(setting),YohkanUtil.CreateRemoteLoadPath(remoteCatalogSuffix));
         }
 
 
         private static void PrepareAssetBuildProcess()
         {
             var config = YohkanUtil.GetBuilderConfig();
+            var settings = YohkanUtil.GetSettings();
+          
+            
             if (config.EnableYohkanAddressableLabelSetWhenBundleBuild)
             {
                 //set yohkan_all_dl label.
-                var settings = YohkanUtil.GetSettings();
                 foreach (var group in settings.groups)
                 {
+                    var updateSchema = group.GetSchema<ContentUpdateGroupSchema>();
+                    if (updateSchema != null && updateSchema.StaticContent) continue;
+                    
                     foreach (var entry in group.entries)
                     {
                         if (!entry.labels.Contains(YohkanEditorConst.ALL_DOWNLOAD_LABEL))
