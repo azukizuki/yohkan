@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: c8f84053b74ad43f59e92f6eca8db8be
   m_currentHash:
     serializedVersion: 2
-    Hash: ef09d18623d02a4b0fee3d91aed9c265
+    Hash: 00000000000000000000000000000000
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
@@ -38,7 +38,7 @@ MonoBehaviour:
     m_Id: c3af196ef71f64f269d4fc6ca66bd17e
   m_RemoteCatalogLoadPath:
     m_Id: d944e0b374b5946279cdb8b3a432a7f8
-  m_ContentStateBuildPathProfileVariableName: <default settings path>
+  m_ContentStateBuildPathProfileVariableName: <custom>
   m_CustomContentStateBuildPath: /Users/azuki/yohkan-sample/Assets/../AssetBundleContentState/1.0_dev
   m_ContentStateBuildPath: /Users/azuki/yohkan-sample/Assets/../AssetBundleContentState/1.0_dev
   m_BuildAddressablesWithPlayerBuild: 0
