@@ -1,2 +1,50 @@
-# yohkan
-simple addressable asset system wrapper for unity
+# Yohkan
+
+YohkanはシンプルなAddressableAssetSystemのWrapperライブラリです
+Yohkanを使うと以下の事がシンプルに実装できます
+
+- リソースの事前予約
+  - 必要なリソースを事前に予約し、まとめてDLを行う事が可能です
+  - DL後のリソースはIAssetContainer経由で同期メソッドで読み込みが可能となります
+- シンプルなビルドバージョン管理の提供
+  - カタログバージョンの命名などを独自で運用ルール化せず、Yohkan内部でアプリバージョンに基づきカタログのバージョンを作成します
+  - アセットバンドル及びcontentStateは指定したディレクトリに出力され、各プロジェクトでのバージョン管理にすぐに回せます
+
+基本思想としては「Addressableがやってくれるところはそのままやらせつつ、運用を考慮したユースケースに対応できるラッパーを提供する」という思想です。
+
+
+<b>現在開発中のため現状で利用は推奨していないです</b>
+
+# 機能紹介
+
+## Runtime
+### YohkanAssetBundleManager
+- 本ライブラリにおけるメインクラス
+- カタログの更新、リソースの一括Download、ラベル指定DL、及び後述するYohkanAssetProviderのファクトリメソッドを提供する。
+- また、実装的に遠い場所に存在するContainerを取得するためのExternalLoader登録・解除APIを提供する
+
+### YohkanAssetProvider
+- 主に利用するクラスである
+- IAssetReserver , IAssetResolver , IAssetContainer , IDisposableを継承している
+- IAssetReserverを用いてリソースの予約を行う（アドレス・AssetReference両方指定可能）
+- IAssetResolverを用いて予約したリソースの解決（必要に応じてダウンロード）を行う。このタイミングで予約したリソースはメモリに乗る
+  - リソースのダウンロードが発生する際、ダウンロードを行うかの確認をユーザーに問うためのイベントや、ダウンロード進捗を通知するイベントをIAssetResolveEventインターフェースを経由しコールする。コンストラクタでIAssetResolveEventを渡すことでプロダクトの性質に応じたDL許可UIなどを提供できる
+- IAssetContainerを用いてリソースの取得を行える（View側で呼ぶイメージ）この関数は同期であり、非同期処理を考慮せずに即リソースを取得できる
+- IDisposableのDisposeをコールすることでAddressableのReleaseAPIをコールし、Containerで確保しているリソースを全て開放する。適切にIDisposable.Dispose()をコールさえすればメモリリークは発生しない
+
+### IExternalAssetContainerについて
+YoohkanAssetProviderを用いてリソースを確保する思想のライブラリではあるが、例えば全画面で共通して表示するリソースなどを各画面でReserveしてしまうと無駄に参照カウントが増えてしまったり、管理が二重になってしまいめんどくさいことが想定される。
+また、基盤側でYohkanAssetProviderをうまく隠蔽した場合など、実装上の距離がどうしても遠く、なかなかIAssetContainerを取得するのが難しいというシチュエーションも想定されるため、前述のYohkanAssetBundleManagerにIExternalAssetContainerインターフェースを登録するための機能を提供している。
+
+IExternalAssetContainerはIAssetContainerを公開するインターフェースで、これを継承したクラスを登録することで実装的に距離が離れた場所からでもContainerにアクセスすることが出来る。
+```
+ public void RegisterContainer<T>(T container) where T : IExternalAssetContainer
+ ```
+```
+public IAssetContainer GetExternalContainer<T>() where T : IExternalAssetContainer
+```
+
+例えばアウトゲーム中に常に存在するMonoBehaviourクラス（例としてCommonAssetContainerとする）などでIExternalAssetContainerを継承し、アウトゲーム中に高頻度で利用されるリソースをReserve/Resolveしておき、RegisterContainer<CommonAssetContainer>(this);のように登録させれば、アウトゲーム中は各画面からGetExternalContainer<CommonAssetContainer>();でIAssetContainerが取得出来るという訳である。
+
+## Editor
+TBD
