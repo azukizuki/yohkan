@@ -10,18 +10,40 @@ namespace yohkan.editor
 {
     public static class YohkanAssetBundleBuilder
     {
-
-        public static void BuildAssetBundle(string remoteCatalogSuffix)
+        /// <summary>
+        /// ビルド時にYohkanへ渡すパラメータ群
+        /// </summary>
+        public class AssetBundleBuildParameter
         {
-            SetUpAddressablePaths(remoteCatalogSuffix);
-            PrepareAssetBuildProcess();
+            /// <summary>
+            /// カタログのSuffix
+            /// </summary>
+            public readonly string RemoteCatalogSuffix = string.Empty;
+            /// <summary>
+            /// YohkanのAssetBundleビルドに関する設定が終わった後に呼ばれます。引数で設定を行ったAddressableAssetSettingを渡します。
+            /// 必要に応じてここでビルド前の処理をプロジェクトごとで実装できますが、変更内容によっては正常動作しなくなることがあります。
+            /// </summary>
+            public readonly Action<AddressableAssetSettings> OnPreProcessBuild = null;
+
+            public AssetBundleBuildParameter(string remoteCatalogSuffix,
+                Action<AddressableAssetSettings> onPreProcessBuild)
+            {
+                this.RemoteCatalogSuffix = remoteCatalogSuffix;
+                this.OnPreProcessBuild = onPreProcessBuild;
+            }
+        }
+
+        public static void BuildAssetBundle(AssetBundleBuildParameter parameter)
+        {
+            SetUpAddressablePaths(parameter.RemoteCatalogSuffix);
+            PrepareAssetBuildProcess(parameter.OnPreProcessBuild);
             AddressableAssetSettings.BuildPlayerContent();
         }
 
-        public static void BuildWithContentState(string remoteCatalogSuffix)
+        public static void BuildWithContentState(AssetBundleBuildParameter parameter)
         {
-            SetUpAddressablePaths(remoteCatalogSuffix);
-            PrepareAssetBuildProcess();
+            SetUpAddressablePaths(parameter.RemoteCatalogSuffix);
+            PrepareAssetBuildProcess(parameter.OnPreProcessBuild);
 
             var modifiedEntries = ContentUpdateScript.GatherModifiedEntriesWithDependencies(YohkanUtil.GetSettings(),
                 ContentUpdateScript.GetContentStateDataPath(false));
@@ -59,7 +81,7 @@ namespace yohkan.editor
         }
 
 
-        private static void PrepareAssetBuildProcess()
+        private static void PrepareAssetBuildProcess(Action<AddressableAssetSettings> onPreProcess)
         {
             var config = YohkanUtil.GetBuilderConfig();
             var settings = YohkanUtil.GetSettings();
@@ -82,6 +104,8 @@ namespace yohkan.editor
                     }
                 }
             }
+
+            onPreProcess?.Invoke(settings);
         }
     }
 }

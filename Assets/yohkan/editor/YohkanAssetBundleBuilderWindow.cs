@@ -32,12 +32,12 @@ namespace yohkan.editor
 
             if (GUILayout.Button("新規ビルド"))
             {
-                YohkanAssetBundleBuilder.BuildAssetBundle(_buildSuffix);
+                YohkanAssetBundleBuilder.BuildAssetBundle(new YohkanAssetBundleBuilder.AssetBundleBuildParameter(_buildSuffix,null));
             }
 
             if (GUILayout.Button("差分ビルド"))
             {
-                YohkanAssetBundleBuilder.BuildWithContentState(_buildSuffix);
+                YohkanAssetBundleBuilder.BuildWithContentState(new YohkanAssetBundleBuilder.AssetBundleBuildParameter(_buildSuffix,null));
             }
         }
     }
