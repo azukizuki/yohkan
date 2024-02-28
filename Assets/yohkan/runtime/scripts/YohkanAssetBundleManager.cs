@@ -90,7 +90,7 @@ namespace yohkan.runtime.scripts
                 var agreement = true;
                 if (resolveEvent != null)
                 {
-                    agreement = await resolveEvent.AskDownloadConfirm(downloadSize);
+                    agreement = await resolveEvent.AskDownloadConfirmAsync(downloadSize,cancellationToken);
                 }
 
                 if (!agreement)
@@ -98,17 +98,41 @@ namespace yohkan.runtime.scripts
                     throw new Exception("Download Cancelled by user.");
                 }
 
-                var downloadTaskResult =
-                    Addressables.DownloadDependenciesAsync(label, Addressables.MergeMode.Union, false);
-                #if YOHKAN_ENABLE_UNITASK
-                await UniTask.WhenAll(downloadTaskResult.ToUniTask(cancellationToken: cancellationToken),
-                    PublishDownloadProgressEvent(downloadTaskResult, resolveEvent));
-                #else
-                await Task.WhenAll(downloadTaskResult.Task,
-                    PublishDownloadProgressEvent(downloadTaskResult, resolveEvent));
-                #endif
-                
-                Addressables.Release(downloadTaskResult);
+                if (resolveEvent != null)
+                {
+                    await resolveEvent.OnStartDownloadAsync(cancellationToken);
+                }
+
+                try
+                {
+                    var downloadTaskResult =
+                        Addressables.DownloadDependenciesAsync(label, Addressables.MergeMode.Union, false);
+#if YOHKAN_ENABLE_UNITASK
+                    await UniTask.WhenAll(downloadTaskResult.ToUniTask(cancellationToken: cancellationToken),
+                        PublishDownloadProgressEvent(downloadTaskResult, resolveEvent));
+#else
+                    await Task.WhenAll(downloadTaskResult.Task,
+                        PublishDownloadProgressEvent(downloadTaskResult, resolveEvent));
+#endif
+                    Addressables.Release(downloadTaskResult);
+                }
+                catch (OperationCanceledException)
+                {
+                    YohkanLogger.LogWarning("Download Cancelled!");
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    YohkanLogger.LogError($"DownloadFailed. {e.Message + e.StackTrace}");
+                    throw;
+                }
+                finally
+                {
+                    if (resolveEvent != null)
+                    {
+                        await resolveEvent.OnEndDownloadAsync(cancellationToken);
+                    }
+                }
             }
         }
 

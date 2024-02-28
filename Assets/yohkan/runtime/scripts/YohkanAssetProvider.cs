@@ -101,7 +101,7 @@ namespace yohkan.runtime.scripts
                 var agreement = true;
                 if (_resolveEvent != null)
                 {
-                    agreement = await _resolveEvent.AskDownloadConfirm(downloadSize);
+                    agreement = await _resolveEvent.AskDownloadConfirmAsync(downloadSize,cancellationToken);
                 }
 
                 if (!agreement)
