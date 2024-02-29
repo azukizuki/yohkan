@@ -21,12 +21,14 @@ namespace yohkan.runtime.scripts
         private readonly List<AssetInfo> _cachedAssets = new();
         private readonly HashSet<AssetReserveInfo> _reserveAssets = new();
         private readonly IAssetResolveEvent _resolveEvent = null;
+        private readonly Dictionary<string, Sprite> _cachedSpriteDict = new();
 
 
         public YohkanAssetProvider(IAssetResolveEvent resolveEvent = null)
         {
             _cachedAssets?.Clear();
             _reserveAssets?.Clear();
+            _cachedSpriteDict?.Clear();
             _resolveEvent = resolveEvent;
         }
         
@@ -92,6 +94,10 @@ namespace yohkan.runtime.scripts
                 return (object)m.Reference;
 
             }).Where(m => m != null);
+            
+#if ENABLE_YOHKAN_ANALYZER || UNITY_EDITOR
+            YohkanReserveAnalyzer.PushReservedInfo(keys.Select(m=>m as string));
+#endif
             
             var downloadSize = await Addressables.GetDownloadSizeAsync(keys).Task;
             
@@ -237,7 +243,8 @@ namespace yohkan.runtime.scripts
             {
                 if (type == typeof(Sprite))
                 {
-                    var sprite = ConvertTexture2Sprite(loadTarget.Asset as Texture2D);
+                    var key = loadTarget.Reference != null ? loadTarget.Reference.AssetGUID : loadTarget.Address;
+                    var sprite = GetCacheOrCreateSprite(key,loadTarget.Asset as Texture2D);
                     if (sprite != null)
                     {
                         return sprite as T;
@@ -249,7 +256,6 @@ namespace yohkan.runtime.scripts
 
             return convertedAsset;
         }
-
         
         IEnumerable<T> IAssetContainer.GetAssets<T>(IEnumerable<string> addresses)
         {
@@ -283,7 +289,8 @@ namespace yohkan.runtime.scripts
             {
                 if (type == typeof(Sprite) && loadTarget.AssetType == typeof(Texture2D))
                 {
-                    var sprite = ConvertTexture2Sprite(loadTarget.Asset as Texture2D);
+                    var key = loadTarget.Reference != null ? loadTarget.Reference.AssetGUID : loadTarget.Address;
+                    var sprite = GetCacheOrCreateSprite(key,loadTarget.Asset as Texture2D);
                     if (sprite != null)
                     {
                         return sprite as T;
@@ -301,9 +308,19 @@ namespace yohkan.runtime.scripts
             return references.Select(m => (this as IAssetContainer).GetAsset<T>(m));
         }
         
-        private Sprite ConvertTexture2Sprite(Texture2D tex)
+        private Sprite GetCacheOrCreateSprite(string key,Texture2D tex)
         {
-            return Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), Vector2.zero);
+            if (_cachedSpriteDict.TryGetValue(key, out var sprite))
+            {
+                return sprite;
+            }
+            var s =  Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), Vector2.zero);
+            if (s != null)
+            {
+                _cachedSpriteDict.Add(key,s);
+            }
+
+            return s;
         }
 
         public void Dispose()
@@ -312,8 +329,17 @@ namespace yohkan.runtime.scripts
             {
                 Addressables.Release(cached.Asset);
             }
+
+            foreach (var kvp in _cachedSpriteDict)
+            {
+                if (kvp.Value != null)
+                {
+                    Object.Destroy(kvp.Value);
+                }
+            }
             _cachedAssets.Clear();
             _reserveAssets.Clear();
+            _cachedSpriteDict.Clear();
         }
     }
 }
