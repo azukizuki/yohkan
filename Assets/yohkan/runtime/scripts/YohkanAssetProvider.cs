@@ -80,7 +80,10 @@ namespace yohkan.runtime.scripts
         #endif
         {
             if (!_reserveAssets.Any()) return;
-
+#if ENABLE_YOHKAN_ANALYZER || UNITY_EDITOR
+            YohkanReserveAnalyzer.PushReservedInfo(_reserveAssets.Select(m =>
+                m.Reference == null ? m.Address : m.Reference.AssetGUID));
+#endif
             var keys = _reserveAssets.Select(m =>
             {
                 if (!string.IsNullOrWhiteSpace(m.Address))
@@ -95,9 +98,6 @@ namespace yohkan.runtime.scripts
 
             }).Where(m => m != null);
             
-#if ENABLE_YOHKAN_ANALYZER || UNITY_EDITOR
-            YohkanReserveAnalyzer.PushReservedInfo(keys.Select(m=>m as string));
-#endif
             
             var downloadSize = await Addressables.GetDownloadSizeAsync(keys).Task;
             
