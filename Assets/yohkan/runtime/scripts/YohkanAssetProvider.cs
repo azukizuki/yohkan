@@ -109,17 +109,42 @@ namespace yohkan.runtime.scripts
                     throw new Exception("Download Cancelled by user.");
                 }
 
-                var downloadTaskResult =
-                    Addressables.DownloadDependenciesAsync(keys, Addressables.MergeMode.Union, false);
-                #if YOHKAN_ENABLE_UNITASK
-                await UniTask.WhenAll(downloadTaskResult.ToUniTask(cancellationToken: cancellationToken),
-                    PublishDownloadProgressEvent(downloadTaskResult));
-                #else
+                if (_resolveEvent != null)
+                {
+                    await _resolveEvent.OnStartDownloadAsync(cancellationToken);
+                }
+
+                try
+                {
+                    var downloadTaskResult =
+                        Addressables.DownloadDependenciesAsync(keys, Addressables.MergeMode.Union, false);
+#if YOHKAN_ENABLE_UNITASK
+                    await UniTask.WhenAll(downloadTaskResult.ToUniTask(cancellationToken: cancellationToken),
+                        PublishDownloadProgressEvent(downloadTaskResult));
+#else
                  await Task.WhenAll(downloadTaskResult.Task,
                     PublishDownloadProgressEvent(downloadTaskResult));
-                #endif
-                
-                Addressables.Release(downloadTaskResult);
+#endif
+
+                    Addressables.Release(downloadTaskResult);
+                }
+                catch (OperationCanceledException)
+                {
+                    YohkanLogger.LogWarning("Download Cancelled!");
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    YohkanLogger.LogError($"DownloadFailed. {e.Message + e.StackTrace}");
+                    throw;
+                }
+                finally
+                {
+                    if (_resolveEvent != null)
+                    {
+                        await _resolveEvent.OnEndDownloadAsync(cancellationToken);
+                    }
+                }
             }
 
             var tasks = _reserveAssets.Select(SetCacheAsync);
