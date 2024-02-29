@@ -7,18 +7,21 @@ namespace yohkan.runtime.scripts.debug
 
     public static class YohkanReserveAnalyzer
     {
-        public static IReadOnlyCollection<string[]> ReservedInfo => _queue;
-        private static Queue<string[]> _queue = new();
-        
+        public class ReserveAnalyzerEventArgs
+        {
+            public ReserveAnalyzerEventArgs(IEnumerable<string> addresses)
+            {
+                Address = addresses;
+            }
+            public IEnumerable<string> Address { get; }
+        }
+
+        public delegate void ReserveAnalyzeEventHandler(ReserveAnalyzerEventArgs args);
+        public static event ReserveAnalyzeEventHandler ReserveAnalyzeEvent;
         
         public static void PushReservedInfo(IEnumerable<string> address)
         {
-            _queue.Enqueue(address.ToArray());
-        }
-
-        public static void Clear()
-        {
-            _queue.Clear();
+            ReserveAnalyzeEvent?.Invoke(new ReserveAnalyzerEventArgs(address));
         }
 
     }

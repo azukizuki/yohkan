@@ -80,6 +80,7 @@ namespace yohkan.runtime.scripts
         #endif
         {
             if (!_reserveAssets.Any()) return;
+            
 #if ENABLE_YOHKAN_ANALYZER || UNITY_EDITOR
             YohkanReserveAnalyzer.PushReservedInfo(_reserveAssets.Select(m =>
                 m.Reference == null ? m.Address : m.Reference.AssetGUID));
