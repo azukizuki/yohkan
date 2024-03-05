@@ -38,8 +38,8 @@ namespace yohkan.editor
         public static string CreateContentStateBuildPathString(string suffix)
         {
             var config = GetBuilderConfig();
-            return  Path.Combine(Application.dataPath,EditorUserBuildSettings.activeBuildTarget.ToString(),
-                config.ContentStateBinaryRootDir, CreateRemoteCatalogVersionString(suffix));
+            return  Path.Combine(Application.dataPath,
+                config.ContentStateBinaryRootDir,EditorUserBuildSettings.activeBuildTarget.ToString(),CreateRemoteCatalogVersionString(suffix));
         }
         
         public static YohkanAssetBundleBuilderConfig GetBuilderConfig()
