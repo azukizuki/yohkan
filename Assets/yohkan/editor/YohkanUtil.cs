@@ -39,7 +39,7 @@ namespace yohkan.editor
         {
             var config = GetBuilderConfig();
             return  Path.Combine(Application.dataPath,
-                config.ContentStateBinaryRootDir,EditorUserBuildSettings.activeBuildTarget.ToString(),CreateRemoteCatalogVersionString(suffix));
+                config.ContentStateBinaryRootDir,CreateRemoteCatalogVersionString(suffix),EditorUserBuildSettings.activeBuildTarget.ToString());
         }
         
         public static YohkanAssetBundleBuilderConfig GetBuilderConfig()
