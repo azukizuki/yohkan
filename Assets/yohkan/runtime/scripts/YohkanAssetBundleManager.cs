@@ -43,7 +43,6 @@ namespace yohkan.runtime.scripts
                 else
                 {
                     YohkanLogger.Log("Catalog Update Success!!");
-                    Addressables.CleanBundleCache();
                 }
             }
             else
