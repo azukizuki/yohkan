@@ -34,8 +34,17 @@ namespace yohkan.runtime.scripts
             if (res.Any())
             {
                 YohkanLogger.Log("Detected Catalog Update!");
-                await Addressables.UpdateCatalogs(res, true).Task;
-                YohkanLogger.Log("Updated Internal Catalogs!");
+                var locators = await Addressables.UpdateCatalogs(res, false).Task;
+                if (!locators.Any())
+                {
+                    YohkanLogger.LogError("Failed Catalog Update!!");
+                    throw new Exception("Failed Catalog Update!!");
+                }
+                else
+                {
+                    YohkanLogger.Log("Catalog Update Success!!");
+                    Addressables.CleanBundleCache();
+                }
             }
             else
             {
