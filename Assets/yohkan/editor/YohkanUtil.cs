@@ -18,28 +18,28 @@ namespace yohkan.editor
         {
             var useConfig = string.IsNullOrEmpty(remoteLoadRootPath);
             var config = GetBuilderConfig();
-            return Path.Combine((useConfig ? config.RemoteLoadRootPath : remoteLoadRootPath), CreateRemoteCatalogVersionString(suffix),
+            return Path.Combine((useConfig ? config.RemoteLoadRootPath : remoteLoadRootPath), CreateResourceUniqueString(suffix),
                 EditorUserBuildSettings.activeBuildTarget.ToString());
         }
 
         public static string CreateRemoteBuildPath(string suffix)
         {
             var config = GetBuilderConfig();
-            return Path.Combine(config.RemoteBuildRootPath, CreateRemoteCatalogVersionString(suffix),
+            return Path.Combine(config.RemoteBuildRootPath, CreateResourceUniqueString(suffix),
                 EditorUserBuildSettings.activeBuildTarget.ToString());
             
         }
 
-        public static string CreateRemoteCatalogVersionString(string suffix)
+        private static string CreateResourceUniqueString(string suffix)
         {
             return Application.version + "_" + suffix;
         }
 
-        public static string CreateContentStateBuildPathString(string suffix)
+        public static string CreateContentStateBuildPathString(string resourceUniqueString)
         {
             var config = GetBuilderConfig();
             return  Path.Combine(Application.dataPath,
-                config.ContentStateBinaryRootDir,CreateRemoteCatalogVersionString(suffix),EditorUserBuildSettings.activeBuildTarget.ToString());
+                config.ContentStateBinaryRootDir,CreateResourceUniqueString(resourceUniqueString),EditorUserBuildSettings.activeBuildTarget.ToString());
         }
         
         public static YohkanAssetBundleBuilderConfig GetBuilderConfig()

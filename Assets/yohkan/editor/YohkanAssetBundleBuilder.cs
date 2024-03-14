@@ -16,33 +16,33 @@ namespace yohkan.editor
         public class AssetBundleBuildParameter
         {
             /// <summary>
-            /// カタログのSuffix
+            /// アセットバンドルのディレクトリ名に利用される
             /// </summary>
-            public readonly string RemoteCatalogSuffix = string.Empty;
+            public readonly string ResourceUniqueString = string.Empty;
             /// <summary>
             /// YohkanのAssetBundleビルドに関する設定が終わった後に呼ばれます。引数で設定を行ったAddressableAssetSettingを渡します。
             /// 必要に応じてここでビルド前の処理をプロジェクトごとで実装できますが、変更内容によっては正常動作しなくなることがあります。
             /// </summary>
             public readonly Action<AddressableAssetSettings> OnPreProcessBuild = null;
 
-            public AssetBundleBuildParameter(string remoteCatalogSuffix,
+            public AssetBundleBuildParameter(string resourceUniqueString,
                 Action<AddressableAssetSettings> onPreProcessBuild)
             {
-                this.RemoteCatalogSuffix = remoteCatalogSuffix;
+                this.ResourceUniqueString = resourceUniqueString;
                 this.OnPreProcessBuild = onPreProcessBuild;
             }
         }
 
         public static void BuildAssetBundle(AssetBundleBuildParameter parameter)
         {
-            SetUpAddressablePaths(parameter.RemoteCatalogSuffix);
+            SetUpAddressablePaths(parameter.ResourceUniqueString);
             PrepareAssetBuildProcess(parameter.OnPreProcessBuild);
             AddressableAssetSettings.BuildPlayerContent();
         }
 
         public static void BuildWithContentState(AssetBundleBuildParameter parameter)
         {
-            SetUpAddressablePaths(parameter.RemoteCatalogSuffix);
+            SetUpAddressablePaths(parameter.ResourceUniqueString);
             PrepareAssetBuildProcess(parameter.OnPreProcessBuild);
 
             var modifiedEntries = ContentUpdateScript.GatherModifiedEntriesWithDependencies(YohkanUtil.GetSettings(),
@@ -64,20 +64,18 @@ namespace yohkan.editor
             
         }
 
-        private static void SetUpAddressablePaths(string remoteCatalogSuffix)
+        private static void SetUpAddressablePaths(string resourceUniqueString)
         {
-            var versionString = YohkanUtil.CreateRemoteCatalogVersionString(remoteCatalogSuffix);
             var setting = YohkanUtil.GetSettings();
-            setting.OverridePlayerVersion = versionString;
-            setting.ContentStateBuildPath = YohkanUtil.CreateContentStateBuildPathString(remoteCatalogSuffix);
+            setting.ContentStateBuildPath = YohkanUtil.CreateContentStateBuildPathString(resourceUniqueString);
             setting.BuildRemoteCatalog = true;
             //update remote build & load path.
             var profile = setting.profileSettings;
             var activeProfileId = setting.activeProfileId;
             var remoteLoadVariableData = profile.GetProfileDataByName("Remote.LoadPath");
             var remoteBuildVariableData = profile.GetProfileDataByName("Remote.BuildPath");
-            profile.SetValue(activeProfileId,remoteLoadVariableData.ProfileName,YohkanUtil.CreateRemoteLoadPath(remoteCatalogSuffix));
-            profile.SetValue(activeProfileId,remoteBuildVariableData.ProfileName,YohkanUtil.CreateRemoteBuildPath(remoteCatalogSuffix));
+            profile.SetValue(activeProfileId,remoteLoadVariableData.ProfileName,YohkanUtil.CreateRemoteLoadPath(resourceUniqueString));
+            profile.SetValue(activeProfileId,remoteBuildVariableData.ProfileName,YohkanUtil.CreateRemoteBuildPath(resourceUniqueString));
         }
 
 
