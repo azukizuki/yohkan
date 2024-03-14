@@ -20,7 +20,7 @@ namespace yohkan.editor
             instance.Init();
         }
 
-        private string _buildSuffix = string.Empty;
+        private string _resourceUniqueString = string.Empty;
 
         private void Init()
         {
@@ -28,16 +28,16 @@ namespace yohkan.editor
 
         private void OnGUI()
         {
-            _buildSuffix = EditorGUILayout.TextField("BundleSuffix", _buildSuffix);
+            _resourceUniqueString = EditorGUILayout.TextField("resourceUniqueString", _resourceUniqueString);
 
             if (GUILayout.Button("新規ビルド"))
             {
-                YohkanAssetBundleBuilder.BuildAssetBundle(new YohkanAssetBundleBuilder.AssetBundleBuildParameter(_buildSuffix,null));
+                YohkanAssetBundleBuilder.BuildAssetBundle(new YohkanAssetBundleBuilder.AssetBundleBuildParameter(_resourceUniqueString,null));
             }
 
             if (GUILayout.Button("差分ビルド"))
             {
-                YohkanAssetBundleBuilder.BuildWithContentState(new YohkanAssetBundleBuilder.AssetBundleBuildParameter(_buildSuffix,null));
+                YohkanAssetBundleBuilder.BuildWithContentState(new YohkanAssetBundleBuilder.AssetBundleBuildParameter(_resourceUniqueString,null));
             }
         }
     }
