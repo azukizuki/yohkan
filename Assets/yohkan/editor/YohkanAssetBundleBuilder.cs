@@ -67,6 +67,7 @@ namespace yohkan.editor
         private static void SetUpAddressablePaths(string resourceUniqueString)
         {
             var setting = YohkanUtil.GetSettings();
+            setting.OverridePlayerVersion = Application.version;
             setting.ContentStateBuildPath = YohkanUtil.CreateContentStateBuildPathString(resourceUniqueString);
             setting.BuildRemoteCatalog = true;
             //update remote build & load path.
