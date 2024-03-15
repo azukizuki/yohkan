@@ -98,9 +98,14 @@ namespace yohkan.runtime.scripts
                 return (object)m.Reference;
 
             }).Where(m => m != null);
-            
-            
-            var downloadSize = await Addressables.GetDownloadSizeAsync(keys).Task;
+
+
+            var downloadSizeOperation = Addressables.GetDownloadSizeAsync(keys);
+            var downloadSize = await downloadSizeOperation.Task;
+            if (downloadSizeOperation.Status != AsyncOperationStatus.Succeeded && downloadSizeOperation.OperationException != null)
+            {
+                throw downloadSizeOperation.OperationException;
+            }
             
             if (downloadSize > 0)
             {
@@ -132,7 +137,10 @@ namespace yohkan.runtime.scripts
                  await Task.WhenAll(downloadTaskResult.Task,
                     PublishDownloadProgressEvent(downloadTaskResult));
 #endif
-
+                    if (downloadTaskResult.Status != AsyncOperationStatus.Succeeded && downloadTaskResult.OperationException != null)
+                    {
+                        throw downloadTaskResult.OperationException;
+                    }
                     Addressables.Release(downloadTaskResult);
                 }
                 catch (OperationCanceledException)
