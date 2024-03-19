@@ -34,7 +34,8 @@ namespace yohkan.runtime.scripts
             if (res.Any())
             {
                 YohkanLogger.Log("Detected Catalog Update!");
-                var locators = await Addressables.UpdateCatalogs(res, false).Task;
+                var op = Addressables.UpdateCatalogs(res, false);
+                var locators = await op.Task;
                 if (!locators.Any())
                 {
                     YohkanLogger.LogError("Failed Catalog Update!!");
@@ -42,6 +43,7 @@ namespace yohkan.runtime.scripts
                 }
                 else
                 {
+                    Addressables.Release(op);
                     YohkanLogger.Log("Catalog Update Success!!");
                 }
             }
