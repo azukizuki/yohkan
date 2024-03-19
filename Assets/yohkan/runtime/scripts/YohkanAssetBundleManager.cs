@@ -29,12 +29,14 @@ namespace yohkan.runtime.scripts
         {
             YohkanLogger.Log("check catalog");
             await Addressables.InitializeAsync().Task;
-        
-            var res = await Addressables.CheckForCatalogUpdates(true).Task;
-            if (res.Any())
+
+            var catalogUpdateOp = Addressables.CheckForCatalogUpdates(false);
+            var catalogIds = await catalogUpdateOp.Task;
+            Addressables.Release(catalogUpdateOp);
+            if (catalogIds.Any())
             {
                 YohkanLogger.Log("Detected Catalog Update!");
-                var op = Addressables.UpdateCatalogs(res, false);
+                var op = Addressables.UpdateCatalogs(autoReleaseHandle: false, autoCleanBundleCache: false);
                 var locators = await op.Task;
                 if (!locators.Any())
                 {
@@ -43,6 +45,11 @@ namespace yohkan.runtime.scripts
                 }
                 else
                 {
+                    await Addressables.CleanBundleCache().Task;
+                    foreach (var l in locators)
+                    {
+                        YohkanLogger.Log(l.LocatorId);
+                    }
                     Addressables.Release(op);
                     YohkanLogger.Log("Catalog Update Success!!");
                 }
