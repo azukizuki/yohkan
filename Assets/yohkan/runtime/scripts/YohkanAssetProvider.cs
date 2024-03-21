@@ -118,7 +118,7 @@ namespace yohkan.runtime.scripts
 
                 if (!agreement)
                 {
-                    throw new Exception("Download Cancelled by user.");
+                    throw new YohkanUserDownloadCancelledException("DownloadCancelled by User.");
                 }
 
                 if (_resolveEvent != null)

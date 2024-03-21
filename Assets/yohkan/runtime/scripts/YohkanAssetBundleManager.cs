@@ -35,37 +35,37 @@ namespace yohkan.runtime.scripts
             YohkanLogger.Log("[CatalogInitialize]Check Catalog Update");
             var catalogUpdateOp = Addressables.CheckForCatalogUpdates(false);
             var catalogIds = await catalogUpdateOp.Task;
+            var exception = catalogUpdateOp.OperationException;
             //OperationHandleを開放しておく
             Addressables.Release(catalogUpdateOp);
+            if (exception != null)
+            {
+                throw exception;
+            }
+            
             //カタログ更新ある場合
             if (catalogIds.Any())
             {
-                var sb = new StringBuilder("Detected Catalog Update! CatalogIds:");
+                var sb = new StringBuilder("[CatalogInitialize] Detected Catalog Update! CatalogIds:");
                 foreach (var catalogId in catalogIds)
                 {
                     sb.AppendLine(catalogId);
                 }
                 YohkanLogger.Log(sb.ToString());
                 
-                //カタログ更新を実行。機内モードなどで通信失敗した際もoperationHandleがDisposeされてしまい、古いAssetBundleが削除され進行不能になってしまうのでfalseにしておく
+                //カタログ更新を実行。
                 YohkanLogger.Log("[CatalogInitialize]Start Catalog Update process...");
-                var op = Addressables.UpdateCatalogs(catalogIds, autoReleaseHandle: false);
+                var op = Addressables.UpdateCatalogs();
                 var locators = await op.Task;
                 if (!locators.Any())
                 {
                     //更新失敗している時は例外を投げる（IResourceLocatorが空かどうかで判定する）
-                    //MEMO ここでopのReleaseをしていないのは意図的。ここで開放しちゃうと端末内に元からあったAssetBundle開放されちゃって進行不能になる
                     YohkanLogger.Log("[CatalogInitialize]Failed Catalog Update!!");
-                    throw new Exception("Failed Catalog Update!!");
+                    throw new YohkanException("Failed Catalog Update!!");
                 }
                 else
                 {
                     YohkanLogger.Log("[CatalogInitialize]Update Success! Release OperationHandle.");
-                    //OperationHandleも忘れず開放
-                    Addressables.Release(op);
-                    //ココに来た時は更新成功しているので古いBundleを消す
-                    YohkanLogger.Log("[CatalogInitialize]Clean Bundle Cache.");
-                    await Addressables.CleanBundleCache().Task;
                     YohkanLogger.Log("[CatalogInitialize]Completed All Update Process!");
                 }
             }
@@ -132,7 +132,7 @@ namespace yohkan.runtime.scripts
 
                 if (!agreement)
                 {
-                    throw new Exception("Download Cancelled by user.");
+                    throw new YohkanUserDownloadCancelledException("DownloadCancelled by User.");
                 }
 
                 if (resolveEvent != null)
