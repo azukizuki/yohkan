@@ -29,9 +29,10 @@ namespace yohkan.runtime.scripts
         #endif
         {
             //addressableの初期化完了を待つ。初期化完了していない時にカタログ更新をチェックすると更新があっても更新無しになる
-            YohkanLogger.Log("check catalog");
+            YohkanLogger.Log("[CatalogInitialize]Waiting AAS Initialization.");
             await Addressables.InitializeAsync().Task;
             //カタログ更新あるかチェック。
+            YohkanLogger.Log("[CatalogInitialize]Check Catalog Update");
             var catalogUpdateOp = Addressables.CheckForCatalogUpdates(false);
             var catalogIds = await catalogUpdateOp.Task;
             //OperationHandleを開放しておく
@@ -39,36 +40,38 @@ namespace yohkan.runtime.scripts
             //カタログ更新ある場合
             if (catalogIds.Any())
             {
-                var sb = new StringBuilder("カタログ更新検知しました");
+                var sb = new StringBuilder("Detected Catalog Update! CatalogIds:");
                 foreach (var catalogId in catalogIds)
                 {
-                    sb.Append(catalogId);
+                    sb.AppendLine(catalogId);
                 }
                 YohkanLogger.Log(sb.ToString());
                 
                 //カタログ更新を実行。機内モードなどで通信失敗した際もoperationHandleがDisposeされてしまい、古いAssetBundleが削除され進行不能になってしまうのでfalseにしておく
-                YohkanLogger.Log("Detected Catalog Update!");
+                YohkanLogger.Log("[CatalogInitialize]Start Catalog Update process...");
                 var op = Addressables.UpdateCatalogs(catalogIds, autoReleaseHandle: false);
                 var locators = await op.Task;
                 if (!locators.Any())
                 {
                     //更新失敗している時は例外を投げる（IResourceLocatorが空かどうかで判定する）
                     //MEMO ここでopのReleaseをしていないのは意図的。ここで開放しちゃうと端末内に元からあったAssetBundle開放されちゃって進行不能になる
-                    YohkanLogger.LogError("Failed Catalog Update!!");
+                    YohkanLogger.Log("[CatalogInitialize]Failed Catalog Update!!");
                     throw new Exception("Failed Catalog Update!!");
                 }
                 else
                 {
+                    YohkanLogger.Log("[CatalogInitialize]Update Success! Release OperationHandle.");
                     //OperationHandleも忘れず開放
                     Addressables.Release(op);
                     //ココに来た時は更新成功しているので古いBundleを消す
+                    YohkanLogger.Log("[CatalogInitialize]Clean Bundle Cache.");
                     await Addressables.CleanBundleCache().Task;
-                    YohkanLogger.Log("Catalog Update Success!!");
+                    YohkanLogger.Log("[CatalogInitialize]Completed All Update Process!");
                 }
             }
             else
             {
-                YohkanLogger.Log("non detect catalog update.");
+                YohkanLogger.Log("[CatalogInitialize]No Catalog Update.");
             }
         }
         
