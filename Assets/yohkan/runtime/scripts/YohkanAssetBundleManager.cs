@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -38,9 +39,16 @@ namespace yohkan.runtime.scripts
             //カタログ更新ある場合
             if (catalogIds.Any())
             {
+                var sb = new StringBuilder("カタログ更新検知しました");
+                foreach (var catalogId in catalogIds)
+                {
+                    sb.Append(catalogId);
+                }
+                YohkanLogger.Log(sb.ToString());
+                
                 //カタログ更新を実行。機内モードなどで通信失敗した際もoperationHandleがDisposeされてしまい、古いAssetBundleが削除され進行不能になってしまうのでfalseにしておく
                 YohkanLogger.Log("Detected Catalog Update!");
-                var op = Addressables.UpdateCatalogs(autoReleaseHandle: false, autoCleanBundleCache: false);
+                var op = Addressables.UpdateCatalogs(catalogIds, autoReleaseHandle: false);
                 var locators = await op.Task;
                 if (!locators.Any())
                 {
@@ -51,10 +59,10 @@ namespace yohkan.runtime.scripts
                 }
                 else
                 {
-                    //ココに来た時は更新成功しているので古いBundleを消す
-                    await Addressables.CleanBundleCache().Task;
                     //OperationHandleも忘れず開放
                     Addressables.Release(op);
+                    //ココに来た時は更新成功しているので古いBundleを消す
+                    await Addressables.CleanBundleCache().Task;
                     YohkanLogger.Log("Catalog Update Success!!");
                 }
             }
