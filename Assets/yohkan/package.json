@@ -1,6 +1,6 @@
 {
   "name": "com.azuki.yohkan",
-  "version": "0.1.3",
+  "version": "1.0.0",
   "displayName": "yohkan",
   "description": "simple addressable wrapper.",
   "keywords": [
