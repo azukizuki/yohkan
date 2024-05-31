@@ -14,32 +14,27 @@ namespace yohkan.editor
             return AddressableAssetSettingsDefaultObject.Settings;
         }
 
-        public static string CreateRemoteLoadPath(string suffix,string remoteLoadRootPath = null)
+        public static string CreateRemoteLoadPath(string resourceUniqueString,string remoteLoadRootPath = null)
         {
             var useConfig = string.IsNullOrEmpty(remoteLoadRootPath);
             var config = GetBuilderConfig();
-            return Path.Combine((useConfig ? config.RemoteLoadRootPath : remoteLoadRootPath), CreateResourceUniqueString(suffix),
+            return Path.Combine((useConfig ? config.RemoteLoadRootPath : remoteLoadRootPath), resourceUniqueString,
                 EditorUserBuildSettings.activeBuildTarget.ToString());
         }
 
-        public static string CreateRemoteBuildPath(string suffix)
+        public static string CreateRemoteBuildPath(string resourceUniqueString)
         {
             var config = GetBuilderConfig();
-            return Path.Combine(config.RemoteBuildRootPath, CreateResourceUniqueString(suffix),
+            return Path.Combine(config.RemoteBuildRootPath, resourceUniqueString,
                 EditorUserBuildSettings.activeBuildTarget.ToString());
             
-        }
-
-        private static string CreateResourceUniqueString(string suffix)
-        {
-            return Application.version + "_" + suffix;
         }
 
         public static string CreateContentStateBuildPathString(string resourceUniqueString)
         {
             var config = GetBuilderConfig();
             return  Path.Combine(Application.dataPath,
-                config.ContentStateBinaryRootDir,CreateResourceUniqueString(resourceUniqueString),EditorUserBuildSettings.activeBuildTarget.ToString());
+                config.ContentStateBinaryRootDir,resourceUniqueString,EditorUserBuildSettings.activeBuildTarget.ToString());
         }
         
         public static YohkanAssetBundleBuilderConfig GetBuilderConfig()
