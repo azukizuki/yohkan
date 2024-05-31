@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using yohkan.runtime.scripts.debug;
 using yohkan.runtime.scripts.interfaces;
-using Object = UnityEngine.Object;
 #if YOHKAN_ENABLE_UNITASK
 using Cysharp.Threading.Tasks;
 #endif
@@ -20,7 +17,6 @@ namespace yohkan.runtime.scripts
     {
 
         private readonly List<IDisposable> _bundleProviderDisposables = new();
-        private readonly Dictionary<Type, IExternalAssetContainer> _externalAssetContainers = new();
         
         #if YOHKAN_ENABLE_UNITASK
         public async UniTask InitializeAsync(CancellationToken cancellationToken)
@@ -198,49 +194,9 @@ namespace yohkan.runtime.scripts
             var res = await Addressables.GetDownloadSizeAsync(address).Task;
             return res == 0;
         }
-
-        public IAssetContainer GetExternalContainer<T>() where T : IExternalAssetContainer
-        {
-            var type = typeof(T);
-            if (!_externalAssetContainers.TryGetValue(type, out var container))
-            {
-                YohkanLogger.LogError($"{type.Name} container not found!");
-                return null;
-            }
-
-            return container.Container;
-        }
-        
-        public void RegisterContainer<T>(T container) where T : IExternalAssetContainer
-        {
-            var type = typeof(T);
-            if (_externalAssetContainers.ContainsKey(type))
-            {
-                YohkanLogger.LogWarning($"Already exists {type.Name}");
-                return;
-            }
-            _externalAssetContainers[type] = container;
-        }
-
-        public void UnRegisterContainer<T>() where T : IExternalAssetContainer
-        {
-            var type = typeof(T);
-            if (!_externalAssetContainers.ContainsKey(type))
-            {
-                return;
-            }
-
-            _externalAssetContainers.Remove(type);
-        }
-
-        public void UnRegisterAllContainer()
-        {
-            _externalAssetContainers.Clear();
-        }
         
         public void Dispose()
         {
-            _externalAssetContainers.Clear();
             foreach (var disposable in _bundleProviderDisposables)
             {
                 disposable?.Dispose();
