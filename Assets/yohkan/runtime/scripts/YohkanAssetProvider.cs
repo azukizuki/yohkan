@@ -21,14 +21,12 @@ namespace yohkan.runtime.scripts
         private readonly List<AssetInfo> _cachedAssets = new();
         private readonly HashSet<AssetReserveInfo> _reserveAssets = new();
         private readonly IAssetResolveEvent _resolveEvent = null;
-        private readonly Dictionary<string, Sprite> _cachedSpriteDict = new();
 
 
         public YohkanAssetProvider(IAssetResolveEvent resolveEvent = null)
         {
             _cachedAssets?.Clear();
             _reserveAssets?.Clear();
-            _cachedSpriteDict?.Clear();
             _resolveEvent = resolveEvent;
         }
         
@@ -36,19 +34,18 @@ namespace yohkan.runtime.scripts
         {
             foreach (var cached in _cachedAssets)
             {
-                Addressables.Release(cached.Asset);
-            }
-
-            foreach (var kvp in _cachedSpriteDict)
-            {
-                if (kvp.Value != null)
+                if (cached.Asset != null)
                 {
-                    Object.Destroy(kvp.Value);
+                    Addressables.Release(cached.Asset);
+                }
+
+                if (cached.SpriteAsset != null)
+                {
+                    Addressables.Release(cached.SpriteAsset);
                 }
             }
             _cachedAssets.Clear();
             _reserveAssets.Clear();
-            _cachedSpriteDict.Clear();
         }
     }
 }
